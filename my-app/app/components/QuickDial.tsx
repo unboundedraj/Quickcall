@@ -1,21 +1,28 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import "./prompt-diary.css";
-import type { Prompt } from "./promptDiaryTypes";
-import { PromptDiaryCard } from "./PromptDiaryCard";
+import type { QuickDial } from "./quickDialTypes";
+import { QuickDialCard } from "./QuickDialCard";
 
-export type { Prompt } from "./promptDiaryTypes";
+function isValidHttpUrl(url: string) {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
 
-export default function PromptDiary({ embedded = false }: { embedded?: boolean }) {
-  const [prompts, setPrompts] = useState<Prompt[]>([]);
+export default function QuickDial({ embedded = false }: { embedded?: boolean }) {
+  const [entries, setEntries] = useState<QuickDial[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [abbr, setAbbr] = useState("");
   const [desc, setDesc] = useState("");
-  const [full, setFull] = useState("");
+  const [url, setUrl] = useState("");
 
   useEffect(() => {
     const load = async () => {
@@ -23,16 +30,16 @@ export default function PromptDiary({ embedded = false }: { embedded?: boolean }
         setLoading(true);
         setError(null);
 
-        const res = await fetch("/api/prompts", { cache: "no-store" });
+        const res = await fetch("/api/quick-dials", { cache: "no-store" });
 
         if (!res.ok) {
-          throw new Error("Failed to load prompts.");
+          throw new Error("Failed to load quick dials.");
         }
 
-        const data = (await res.json()) as Prompt[];
-        setPrompts(data);
+        const data = (await res.json()) as QuickDial[];
+        setEntries(data);
       } catch {
-        setError("Could not load prompts from the database.");
+        setError("Could not load quick dials from the database.");
       } finally {
         setLoading(false);
       }
@@ -42,13 +49,19 @@ export default function PromptDiary({ embedded = false }: { embedded?: boolean }
   }, []);
 
   const add = async () => {
-    if (!abbr.trim() || !full.trim()) return;
+    const trimmedUrl = url.trim();
+    if (!trimmedUrl) return;
+
+    if (!isValidHttpUrl(trimmedUrl)) {
+      setError("Please enter a valid URL starting with http:// or https://");
+      return;
+    }
 
     try {
       setSaving(true);
       setError(null);
 
-      const res = await fetch("/api/prompts", {
+      const res = await fetch("/api/quick-dials", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -56,29 +69,29 @@ export default function PromptDiary({ embedded = false }: { embedded?: boolean }
         body: JSON.stringify({
           abbreviation: abbr.trim(),
           description: desc.trim(),
-          fullPrompt: full.trim(),
+          url: trimmedUrl,
         }),
       });
 
       if (!res.ok) {
-        throw new Error("Failed to create prompt.");
+        throw new Error("Failed to create quick dial entry.");
       }
 
-      const created = (await res.json()) as Prompt;
-      setPrompts((prev) => [...prev, created]);
+      const created = (await res.json()) as QuickDial;
+      setEntries((prev) => [created, ...prev]);
       setAbbr("");
       setDesc("");
-      setFull("");
+      setUrl("");
       setOpen(false);
     } catch {
-      setError("Could not save prompt to the database.");
+      setError("Could not save quick dial to the database.");
     } finally {
       setSaving(false);
     }
   };
 
   const remove = async (id: string) => {
-    const password = window.prompt("Enter admin password to delete this prompt:");
+    const password = window.prompt("Enter admin password to delete this quick dial:");
     if (password === null) return;
     if (!password.trim()) {
       setError("Delete cancelled: admin password is required.");
@@ -88,7 +101,7 @@ export default function PromptDiary({ embedded = false }: { embedded?: boolean }
     try {
       setError(null);
 
-      const res = await fetch(`/api/prompts/${id}`, {
+      const res = await fetch(`/api/quick-dials/${id}`, {
         method: "DELETE",
         headers: {
           "x-admin-delete-password": password,
@@ -96,7 +109,7 @@ export default function PromptDiary({ embedded = false }: { embedded?: boolean }
       });
 
       if (res.status === 401) {
-        setError("Incorrect admin password. Prompt was not deleted.");
+        setError("Incorrect admin password. Quick dial was not deleted.");
         return;
       }
 
@@ -109,12 +122,12 @@ export default function PromptDiary({ embedded = false }: { embedded?: boolean }
       }
 
       if (!res.ok) {
-        throw new Error("Failed to delete prompt.");
+        throw new Error("Failed to delete quick dial entry.");
       }
 
-      setPrompts((prev) => prev.filter((x) => x.id !== id));
+      setEntries((prev) => prev.filter((x) => x.id !== id));
     } catch {
-      setError("Could not delete prompt from the database.");
+      setError("Could not delete quick dial from the database.");
     }
   };
 
@@ -123,12 +136,12 @@ export default function PromptDiary({ embedded = false }: { embedded?: boolean }
       <div className="pd-inner">
         <p className="pd-eyebrow">Personal collection</p>
         <h1 className="pd-title">
-          Prompt <strong>Diary</strong>
+          Quick <strong>Dial</strong>
         </h1>
         <div className="pd-rule" />
         <p className="pd-subtitle">
-          Click any entry to copy · Hover to preview · {prompts.length} prompt
-          {prompts.length !== 1 ? "s" : ""} indexed
+          Click any entry to open · Hover to preview · {entries.length} website
+          {entries.length !== 1 ? "s" : ""} indexed
         </p>
 
         {error && <p className="pd-empty">{error}</p>}
@@ -155,10 +168,10 @@ export default function PromptDiary({ embedded = false }: { embedded?: boolean }
 
         {open && (
           <div className="pd-form">
-            <label className="pd-form-label">Abbreviation</label>
+            <label className="pd-form-label">Abbreviation (optional)</label>
             <input
               type="text"
-              placeholder="e.g. TL;DR"
+              placeholder="e.g. GH"
               value={abbr}
               onChange={(e) => setAbbr(e.target.value)}
             />
@@ -166,19 +179,17 @@ export default function PromptDiary({ embedded = false }: { embedded?: boolean }
             <label className="pd-form-label">Description (optional)</label>
             <input
               type="text"
-              placeholder="Short description of intent"
+              placeholder="Short website description"
               value={desc}
               onChange={(e) => setDesc(e.target.value)}
             />
 
-            <label className="pd-form-label">
-              Full prompt — this is what gets copied
-            </label>
-            <textarea
-              placeholder="Write the full prompt text here…"
-              value={full}
-              onChange={(e) => setFull(e.target.value)}
-              rows={3}
+            <label className="pd-form-label">URL — opens in a new tab</label>
+            <input
+              type="url"
+              placeholder="https://example.com"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
             />
 
             <div className="pd-form-actions">
@@ -186,7 +197,7 @@ export default function PromptDiary({ embedded = false }: { embedded?: boolean }
                 type="button"
                 className="pd-form-submit"
                 onClick={() => void add()}
-                disabled={!abbr.trim() || !full.trim() || saving}
+                disabled={!url.trim() || saving}
               >
                 {saving ? "Saving..." : "Add entry"}
               </button>
@@ -202,17 +213,17 @@ export default function PromptDiary({ embedded = false }: { embedded?: boolean }
         )}
 
         {loading ? (
-          <p className="pd-empty">Loading prompts...</p>
-        ) : prompts.length === 0 ? (
-          <p className="pd-empty">No prompts yet — add your first entry.</p>
+          <p className="pd-empty">Loading quick dials...</p>
+        ) : entries.length === 0 ? (
+          <p className="pd-empty">No quick dials yet — add your first entry.</p>
         ) : (
           <div className="pd-grid">
-            {prompts.map((p, i) => (
-              <PromptDiaryCard
-                key={p.id}
-                prompt={p}
+            {entries.map((entry, i) => (
+              <QuickDialCard
+                key={entry.id}
+                entry={entry}
                 index={i}
-                onRemove={() => void remove(p.id)}
+                onRemove={() => void remove(entry.id)}
               />
             ))}
           </div>

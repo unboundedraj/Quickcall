@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import PromptDiary from "./PromptDiary";
+import QuickDial from "./QuickDial";
 import "./quickcall-experience.css";
 
 export default function QuickcallExperience() {
@@ -49,6 +50,7 @@ export default function QuickcallExperience() {
 
             <div className="qc-cover-points" aria-hidden="true">
               <span>Prompt library</span>
+              <span>Quick Dial websites</span>
               <span>Fast copy actions</span>
               <span>More sections coming soon</span>
             </div>
@@ -72,6 +74,12 @@ export default function QuickcallExperience() {
         <section className="qc-section" aria-label="Prompt Diary section">
           <PromptDiary embedded />
         </section>
+
+        <section className="qc-section" aria-label="Quick Dial section">
+          <QuickDial embedded />
+        </section>
+
+        <footer className="qc-footer-note">Made with love by unboundedraj.</footer>
       </main>
     </div>
   );

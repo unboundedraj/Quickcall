@@ -1,7 +1,7 @@
 import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
 
-const COLLECTION_NAME = process.env.MONGODB_PROMPTS_COLLECTION || "prompts";
+const COLLECTION_NAME = process.env.MONGODB_QUICK_DIALS_COLLECTION || "quick_dials";
 
 function getDatabaseName() {
   const dbName = process.env.MONGODB_DB;
@@ -30,23 +30,21 @@ export async function DELETE(
     const { id } = await context.params;
 
     if (!ObjectId.isValid(id)) {
-      return Response.json({ error: "Invalid prompt id." }, { status: 400 });
+      return Response.json({ error: "Invalid quick dial id." }, { status: 400 });
     }
 
     const client = await clientPromise;
-    const collection = client
-      .db(getDatabaseName())
-      .collection(COLLECTION_NAME);
+    const collection = client.db(getDatabaseName()).collection(COLLECTION_NAME);
 
     const result = await collection.deleteOne({ _id: new ObjectId(id) });
 
     if (result.deletedCount === 0) {
-      return Response.json({ error: "Prompt not found." }, { status: 404 });
+      return Response.json({ error: "Quick dial not found." }, { status: 404 });
     }
 
     return new Response(null, { status: 204 });
   } catch (error) {
-    console.error("Failed to delete prompt", error);
-    return Response.json({ error: "Failed to delete prompt." }, { status: 500 });
+    console.error("Failed to delete quick dial", error);
+    return Response.json({ error: "Failed to delete quick dial." }, { status: 500 });
   }
 }

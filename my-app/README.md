@@ -28,17 +28,27 @@ Prompt Diary now stores entries in MongoDB through Next.js Route Handlers:
 - `POST /api/prompts`
 - `DELETE /api/prompts/:id`
 
+Quick Dial stores website entries in MongoDB through:
+
+- `GET /api/quick-dials`
+- `POST /api/quick-dials`
+- `DELETE /api/quick-dials/:id`
+
 Create a local `.env.local` file with:
 
 ```bash
 MONGODB_URI=mongodb+srv://<username>:<password>@<cluster-url>/?retryWrites=true&w=majority
 MONGODB_DB=<database-name>
 MONGODB_PROMPTS_COLLECTION=prompts
+MONGODB_QUICK_DIALS_COLLECTION=quick_dials
+ADMIN_DELETE_PASSWORD=<strong-admin-password>
 ```
 
 Notes:
 
 - `MONGODB_PROMPTS_COLLECTION` is optional. It defaults to `prompts`.
+- `MONGODB_QUICK_DIALS_COLLECTION` is optional. It defaults to `quick_dials`.
+- `ADMIN_DELETE_PASSWORD` is required for delete operations; deletion returns unauthorized without the correct value.
 - Restart the dev server after changing env vars.
 - If you deploy (for example on Vercel), add the same env vars in your deployment settings.
 

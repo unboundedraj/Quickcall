@@ -2,24 +2,28 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
-import type { Prompt } from "./promptDiaryTypes";
+import type { QuickDial } from "./quickDialTypes";
 
-export function PromptDiaryCard({
-  prompt,
+function getDisplayLabel(entry: QuickDial) {
+  return entry.abbreviation || entry.description || entry.url;
+}
+
+export function QuickDialCard({
+  entry,
   index,
   onRemove,
 }: {
-  prompt: Prompt;
+  entry: QuickDial;
   index: number;
   onRemove: () => void;
 }) {
   const [hover, setHover] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [opened, setOpened] = useState(false);
   const [tooltipShift, setTooltipShift] = useState(0);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (!hover || copied) {
+    if (!hover || opened) {
       return;
     }
 
@@ -50,19 +54,21 @@ export function PromptDiaryCard({
     return () => {
       window.removeEventListener("resize", adjustTooltip);
     };
-  }, [hover, copied, prompt.description]);
+  }, [hover, opened, entry.description]);
 
-  const copy = (e: React.SyntheticEvent) => {
+  const open = (e: React.SyntheticEvent) => {
     if ((e.target as HTMLElement).closest(".pd-card-remove")) return;
-    navigator.clipboard.writeText(prompt.fullPrompt);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1400);
+    window.open(entry.url, "_blank", "noopener,noreferrer");
+    setOpened(true);
+    setTimeout(() => setOpened(false), 1400);
   };
+
+  const label = getDisplayLabel(entry);
 
   return (
     <div
       className="pd-card"
-      onClick={copy}
+      onClick={open}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => {
         setHover(false);
@@ -71,7 +77,7 @@ export function PromptDiaryCard({
       tabIndex={0}
       role="button"
       onKeyDown={(e) => {
-        if (e.key === "Enter") copy(e);
+        if (e.key === "Enter") open(e);
       }}
     >
       <span className="pd-card-index">{String(index + 1).padStart(2, "0")}</span>
@@ -83,17 +89,17 @@ export function PromptDiaryCard({
           e.stopPropagation();
           onRemove();
         }}
-        aria-label={`Remove ${prompt.abbreviation}`}
+        aria-label={`Remove ${label}`}
       >
         ×
       </button>
 
-      <span className="pd-card-abbr">{prompt.abbreviation}</span>
+      <span className="pd-card-abbr">{label}</span>
       <div className="pd-card-line" />
 
-      {copied && <span className="pd-card-copied">copied</span>}
+      {opened && <span className="pd-card-copied">opened</span>}
 
-      {hover && !copied && (
+      {hover && !opened && (
         <div
           ref={tooltipRef}
           className="pd-tooltip"
@@ -103,9 +109,7 @@ export function PromptDiaryCard({
             } as CSSProperties
           }
         >
-          <div className="pd-tooltip-title">
-            {prompt.description || prompt.abbreviation}
-          </div>
+          <div className="pd-tooltip-title">{entry.description || label}</div>
         </div>
       )}
     </div>
