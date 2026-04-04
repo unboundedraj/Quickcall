@@ -16,6 +16,10 @@ export default function PromptDiary({ embedded = false }: { embedded?: boolean }
   const [abbr, setAbbr] = useState("");
   const [desc, setDesc] = useState("");
   const [full, setFull] = useState("");
+  const [activePrompt, setActivePrompt] = useState<Prompt | null>(null);
+  const [activePromptText, setActivePromptText] = useState("");
+  const [updatingPrompt, setUpdatingPrompt] = useState(false);
+  const [activePromptError, setActivePromptError] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -118,6 +122,58 @@ export default function PromptDiary({ embedded = false }: { embedded?: boolean }
     }
   };
 
+  const openPrompt = (prompt: Prompt) => {
+    setActivePrompt(prompt);
+    setActivePromptText(prompt.fullPrompt);
+    setActivePromptError(null);
+  };
+
+  const closePrompt = () => {
+    if (updatingPrompt) return;
+    setActivePrompt(null);
+    setActivePromptText("");
+    setActivePromptError(null);
+  };
+
+  const savePrompt = async () => {
+    if (!activePrompt) return;
+
+    const nextFullPrompt = activePromptText.trim();
+    if (!nextFullPrompt) {
+      setActivePromptError("Prompt text cannot be empty.");
+      return;
+    }
+
+    try {
+      setUpdatingPrompt(true);
+      setActivePromptError(null);
+
+      const res = await fetch(`/api/prompts/${activePrompt.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fullPrompt: nextFullPrompt,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to update prompt.");
+      }
+
+      const updated = (await res.json()) as Prompt;
+      setPrompts((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+      setActivePrompt(null);
+      setActivePromptText("");
+      setActivePromptError(null);
+    } catch {
+      setActivePromptError("Could not update prompt in the database.");
+    } finally {
+      setUpdatingPrompt(false);
+    }
+  };
+
   return (
     <div className={`pd-root${embedded ? " pd-root--embedded" : ""}`}>
       <div className="pd-inner">
@@ -213,8 +269,64 @@ export default function PromptDiary({ embedded = false }: { embedded?: boolean }
                 prompt={p}
                 index={i}
                 onRemove={() => void remove(p.id)}
+                onView={() => openPrompt(p)}
               />
             ))}
+          </div>
+        )}
+
+        {activePrompt && (
+          <div
+            className="pd-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="pd-modal-title"
+            onClick={closePrompt}
+          >
+            <div
+              className="pd-modal-panel"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <p className="pd-modal-eyebrow">Prompt Viewer</p>
+              <h2 className="pd-modal-title" id="pd-modal-title">
+                {activePrompt.abbreviation}
+              </h2>
+              <p className="pd-modal-description">
+                {activePrompt.description || activePrompt.abbreviation}
+              </p>
+
+              <label className="pd-form-label" htmlFor="pd-modal-full-prompt">
+                Full prompt
+              </label>
+              <textarea
+                id="pd-modal-full-prompt"
+                value={activePromptText}
+                onChange={(e) => setActivePromptText(e.target.value)}
+                rows={10}
+                className="pd-modal-textarea"
+              />
+
+              {activePromptError && <p className="pd-modal-error">{activePromptError}</p>}
+
+              <div className="pd-modal-actions">
+                <button
+                  type="button"
+                  className="pd-form-submit"
+                  onClick={() => void savePrompt()}
+                  disabled={updatingPrompt}
+                >
+                  {updatingPrompt ? "Saving..." : "Save"}
+                </button>
+                <button
+                  type="button"
+                  className="pd-form-cancel"
+                  onClick={closePrompt}
+                  disabled={updatingPrompt}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

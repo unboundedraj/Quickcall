@@ -8,10 +8,12 @@ export function PromptDiaryCard({
   prompt,
   index,
   onRemove,
+  onView,
 }: {
   prompt: Prompt;
   index: number;
   onRemove: () => void;
+  onView: () => void;
 }) {
   const [hover, setHover] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -53,7 +55,7 @@ export function PromptDiaryCard({
   }, [hover, copied, prompt.description]);
 
   const copy = (e: React.SyntheticEvent) => {
-    if ((e.target as HTMLElement).closest(".pd-card-remove")) return;
+    if ((e.target as HTMLElement).closest(".pd-card-action")) return;
     navigator.clipboard.writeText(prompt.fullPrompt);
     setCopied(true);
     setTimeout(() => setCopied(false), 1400);
@@ -78,7 +80,7 @@ export function PromptDiaryCard({
 
       <button
         type="button"
-        className="pd-card-remove"
+        className="pd-card-action pd-card-remove"
         onClick={(e) => {
           e.stopPropagation();
           onRemove();
@@ -86,6 +88,27 @@ export function PromptDiaryCard({
         aria-label={`Remove ${prompt.abbreviation}`}
       >
         ×
+      </button>
+
+      <button
+        type="button"
+        className="pd-card-action pd-card-eye"
+        onClick={(e) => {
+          e.stopPropagation();
+          onView();
+        }}
+        aria-label={`View and edit ${prompt.abbreviation}`}
+      >
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M2 12c2.1-3.3 5.5-5 10-5s7.9 1.7 10 5c-2.1 3.3-5.5 5-10 5S4.1 15.3 2 12Z"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <circle cx="12" cy="12" r="2.6" fill="currentColor" />
+        </svg>
       </button>
 
       <span className="pd-card-abbr">{prompt.abbreviation}</span>

@@ -285,7 +285,7 @@
 /* Grid */
 .pd-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(74px, 1fr));
   gap: 1px;
 }
 
@@ -339,46 +339,46 @@
 
 .pd-card-index {
   font-family: var(--mono);
-  font-size: 9px;
+  font-size: 8px;
   letter-spacing: 0.14em;
   color: var(--faint);
   position: absolute;
-  top: 12px;
-  left: 14px;
+  top: 10px;
+  left: 10px;
   z-index: 1;
   transition: color 0.25s;
 }
 
 .pd-card-abbr {
   font-family: var(--serif);
-  font-size: clamp(15px, 2vw, 20px);
+  font-size: clamp(13px, 1.8vw, 17px);
   font-weight: 600;
   letter-spacing: 0.04em;
   color: var(--ink);
   text-align: center;
-  padding: 0 12px;
+  padding: 0 10px;
   z-index: 1;
   transition: color 0.25s;
   word-break: break-word;
 }
 
 .pd-card-line {
-  width: 24px;
+  width: 18px;
   height: 1.5px;
   background: var(--sienna);
-  margin-top: 8px;
+  margin-top: 6px;
   z-index: 1;
   transition: background 0.25s;
 }
 
 .pd-card-copied {
   position: absolute;
-  bottom: 12px;
+  bottom: 8px;
   left: 0;
   right: 0;
   text-align: center;
   font-family: var(--mono);
-  font-size: 9px;
+  font-size: 8px;
   letter-spacing: 0.15em;
   text-transform: uppercase;
   color: var(--gold);
@@ -397,19 +397,18 @@
   }
 }
 
-.pd-card-remove {
+.pd-card-action {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 22px;
-  height: 22px;
+  top: 6px;
+  width: 18px;
+  height: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: transparent;
   border: 1px solid transparent;
   color: var(--faint);
-  font-size: 16px;
+  font-size: 13px;
   cursor: pointer;
   z-index: 3;
   opacity: 0;
@@ -419,11 +418,26 @@
     border-color 0.2s;
 }
 
-.pd-card:hover .pd-card-remove {
+.pd-card-remove {
+  right: 6px;
+}
+
+.pd-card-eye {
+  right: 28px;
+}
+
+.pd-card-eye svg {
+  width: 13px;
+  height: 13px;
+}
+
+.pd-card:hover .pd-card-action,
+.pd-card:focus-within .pd-card-action {
   opacity: 1;
 }
 
-.pd-card-remove:hover {
+.pd-card-remove:hover,
+.pd-card-eye:hover {
   color: var(--rust);
   border-color: var(--rust);
 }
@@ -477,6 +491,97 @@
   font-size: 10px;
   color: var(--muted);
   line-height: 1.6;
+}
+
+/* Modal */
+.pd-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 12, 9, 0.54);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 120;
+}
+
+.pd-modal-panel {
+  width: min(720px, 100%);
+  background: var(--vellum);
+  border: 1px solid var(--faint);
+  padding: 24px;
+  box-shadow: 0 18px 45px rgba(26, 20, 16, 0.3);
+}
+
+.pd-modal-eyebrow {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.pd-modal-title {
+  font-size: clamp(30px, 4vw, 40px);
+  color: var(--ink);
+  line-height: 0.95;
+  margin-top: 8px;
+}
+
+.pd-modal-description {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  margin-top: 8px;
+}
+
+.pd-modal-textarea {
+  width: 100%;
+  margin-top: 6px;
+  padding: 12px;
+  border: 1px solid var(--faint);
+  background: rgba(255, 255, 255, 0.75);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.55;
+  resize: vertical;
+  min-height: 170px;
+}
+
+.pd-modal-textarea:focus {
+  outline: none;
+  border-color: var(--sienna);
+}
+
+.pd-modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.pd-modal-error {
+  margin-top: 12px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--rust);
+}
+
+@media (max-width: 640px) {
+  .pd-modal-panel {
+    padding: 18px;
+  }
+
+  .pd-modal-actions {
+    flex-wrap: wrap;
+  }
+
+  .pd-grid {
+    grid-template-columns: repeat(auto-fill, minmax(68px, 1fr));
+  }
 }
 
 /* Empty state */
