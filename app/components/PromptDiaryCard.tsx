@@ -9,11 +9,13 @@ export function PromptDiaryCard({
   index,
   onRemove,
   onView,
+  onRemoveFromCategory,
 }: {
   prompt: Prompt;
   index: number;
   onRemove: () => void;
   onView: () => void;
+  onRemoveFromCategory?: () => void;
 }) {
   const [hover, setHover] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -21,38 +23,28 @@ export function PromptDiaryCard({
   const tooltipRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (!hover || copied) {
-      return;
-    }
+    if (!hover || copied) return;
 
     const adjustTooltip = () => {
       const tooltip = tooltipRef.current;
       if (!tooltip) return;
 
       setTooltipShift(0);
-
       window.requestAnimationFrame(() => {
         const rect = tooltip.getBoundingClientRect();
-        const viewportPadding = 8;
-        const maxRight = window.innerWidth - viewportPadding;
+        const pad = 8;
+        const maxRight = window.innerWidth - pad;
         let shift = 0;
-
-        if (rect.left < viewportPadding) {
-          shift = viewportPadding - rect.left;
-        } else if (rect.right > maxRight) {
-          shift = maxRight - rect.right;
-        }
-
+        if (rect.left < pad) shift = pad - rect.left;
+        else if (rect.right > maxRight) shift = maxRight - rect.right;
         setTooltipShift(shift);
       });
     };
 
     adjustTooltip();
     window.addEventListener("resize", adjustTooltip);
-    return () => {
-      window.removeEventListener("resize", adjustTooltip);
-    };
-  }, [hover, copied, prompt.description]);
+    return () => window.removeEventListener("resize", adjustTooltip);
+  }, [hover, copied, prompt.fullPrompt]);
 
   const copy = (e: React.SyntheticEvent) => {
     if ((e.target as HTMLElement).closest(".pd-card-action")) return;
@@ -81,11 +73,8 @@ export function PromptDiaryCard({
       <button
         type="button"
         className="pd-card-action pd-card-remove"
-        onClick={(e) => {
-          e.stopPropagation();
-          onRemove();
-        }}
-        aria-label={`Remove ${prompt.abbreviation}`}
+        onClick={(e) => { e.stopPropagation(); onRemove(); }}
+        aria-label={`Delete ${prompt.abbreviation}`}
       >
         ×
       </button>
@@ -93,10 +82,7 @@ export function PromptDiaryCard({
       <button
         type="button"
         className="pd-card-action pd-card-eye"
-        onClick={(e) => {
-          e.stopPropagation();
-          onView();
-        }}
+        onClick={(e) => { e.stopPropagation(); onView(); }}
         aria-label={`View and edit ${prompt.abbreviation}`}
       >
         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -111,8 +97,23 @@ export function PromptDiaryCard({
         </svg>
       </button>
 
+      {onRemoveFromCategory && (
+        <button
+          type="button"
+          className="pd-card-action pd-card-unlink"
+          onClick={(e) => { e.stopPropagation(); onRemoveFromCategory(); }}
+          aria-label={`Remove ${prompt.abbreviation} from category`}
+          title="Remove from category"
+        >
+          −
+        </button>
+      )}
+
       <span className="pd-card-abbr">{prompt.abbreviation}</span>
       <div className="pd-card-line" />
+      {prompt.description && (
+        <span className="pd-card-desc">{prompt.description}</span>
+      )}
 
       {copied && <span className="pd-card-copied">copied</span>}
 
@@ -120,15 +121,9 @@ export function PromptDiaryCard({
         <div
           ref={tooltipRef}
           className="pd-tooltip"
-          style={
-            {
-              "--pd-tooltip-shift": `${tooltipShift}px`,
-            } as CSSProperties
-          }
+          style={{ "--pd-tooltip-shift": `${tooltipShift}px` } as CSSProperties}
         >
-          <div className="pd-tooltip-title">
-            {prompt.description || prompt.abbreviation}
-          </div>
+          <div className="pd-tooltip-body">{prompt.fullPrompt}</div>
         </div>
       )}
     </div>

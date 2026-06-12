@@ -7,6 +7,9 @@ type PromptDoc = {
   abbreviation: string;
   description: string;
   fullPrompt: string;
+  categoryIds?: string[];
+  // legacy field — kept for migration reads only
+  categoryId?: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -15,9 +18,7 @@ const COLLECTION_NAME = process.env.MONGODB_PROMPTS_COLLECTION || "prompts";
 
 function getDatabaseName() {
   const dbName = process.env.MONGODB_DB;
-  if (!dbName) {
-    throw new Error("MONGODB_DB is not set. Add it to your environment variables.");
-  }
+  if (!dbName) throw new Error("MONGODB_DB is not set.");
   return dbName;
 }
 
@@ -27,6 +28,10 @@ function toPrompt(doc: PromptDoc): Prompt {
     abbreviation: doc.abbreviation,
     description: doc.description,
     fullPrompt: doc.fullPrompt,
+    // Migrate: old docs have categoryId (single), new ones have categoryIds (array)
+    categoryIds:
+      doc.categoryIds ??
+      (doc.categoryId ? [doc.categoryId] : []),
   };
 }
 
@@ -38,7 +43,6 @@ export async function GET() {
       .collection<Omit<PromptDoc, "_id">>(COLLECTION_NAME);
 
     const docs = await collection.find({}).sort({ createdAt: 1 }).toArray();
-
     return Response.json(docs.map((doc) => toPrompt(doc as PromptDoc)));
   } catch (error) {
     console.error("Failed to fetch prompts", error);
@@ -60,17 +64,17 @@ export async function POST(request: Request) {
       );
     }
 
-    const now = new Date();
-
     const client = await clientPromise;
     const collection = client
       .db(getDatabaseName())
       .collection<Omit<PromptDoc, "_id">>(COLLECTION_NAME);
 
+    const now = new Date();
     const result = await collection.insertOne({
       abbreviation,
       description,
       fullPrompt,
+      categoryIds: [],
       createdAt: now,
       updatedAt: now,
     });
@@ -81,6 +85,7 @@ export async function POST(request: Request) {
         abbreviation,
         description,
         fullPrompt,
+        categoryIds: [],
       } satisfies Prompt,
       { status: 201 }
     );

@@ -103,7 +103,7 @@
 .pd-action-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 40px;
 }
 
@@ -285,7 +285,7 @@
 /* Grid */
 .pd-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(74px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 1px;
 }
 
@@ -371,6 +371,25 @@
   transition: background 0.25s;
 }
 
+.pd-card-desc {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+  text-align: center;
+  padding: 0 12px;
+  margin-top: 6px;
+  z-index: 1;
+  line-height: 1.5;
+  transition: color 0.25s;
+  word-break: break-word;
+}
+
+.pd-card:hover .pd-card-desc {
+  color: var(--faint);
+}
+
 .pd-card-copied {
   position: absolute;
   bottom: 8px;
@@ -448,7 +467,9 @@
   bottom: calc(100% + 12px);
   left: 50%;
   transform: translateX(calc(-50% + var(--pd-tooltip-shift, 0px)));
-  width: min(220px, calc(100vw - 16px));
+  width: min(320px, calc(100vw - 16px));
+  max-height: 220px;
+  overflow-y: auto;
   background: var(--ink);
   color: var(--aged);
   padding: 14px 16px;
@@ -488,9 +509,11 @@
 
 .pd-tooltip-body {
   font-family: var(--mono);
-  font-size: 10px;
-  color: var(--muted);
-  line-height: 1.6;
+  font-size: 11px;
+  color: var(--aged);
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 /* Modal */
@@ -580,8 +603,227 @@
   }
 
   .pd-grid {
-    grid-template-columns: repeat(auto-fill, minmax(68px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
   }
+}
+
+/* Error */
+.pd-error {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--rust);
+  letter-spacing: 0.06em;
+  margin-bottom: 20px;
+}
+
+/* Secondary add button */
+.pd-add-btn--secondary {
+  border-color: var(--muted);
+  color: var(--muted);
+}
+
+.pd-add-btn--secondary::after {
+  background: var(--muted);
+}
+
+.pd-add-btn--secondary:hover {
+  color: var(--vellum);
+}
+
+/* Category section */
+.pd-category-section {
+  margin-bottom: 32px;
+}
+
+.pd-category-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--faint);
+}
+
+.pd-category-name {
+  font-family: var(--mono);
+  font-size: 20px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.pd-category-header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.pd-category-btn {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--faint);
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.pd-category-btn:hover {
+  color: var(--ink);
+  border-color: var(--muted);
+}
+
+.pd-category-btn--danger:hover {
+  color: var(--rust);
+  border-color: var(--rust);
+}
+
+.pd-category-btn--add {
+  color: var(--sienna);
+  border-color: var(--sienna);
+}
+
+.pd-category-btn--add:hover {
+  background: var(--sienna);
+  color: var(--vellum);
+  border-color: var(--sienna);
+}
+
+/* Category grid */
+.pd-category-grid {
+  min-height: 80px;
+}
+
+.pd-category-empty-hint {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--faint);
+  padding: 28px 0;
+  grid-column: 1 / -1;
+}
+
+/* Unlink button (remove from category, not delete) */
+.pd-card-unlink {
+  left: 6px;
+  right: auto;
+  font-size: 16px;
+  line-height: 1;
+  color: var(--faint);
+}
+
+.pd-card-unlink:hover {
+  color: var(--gold);
+  border-color: var(--gold);
+}
+
+/* Prompt picker modal */
+.pd-picker-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 12, 9, 0.54);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 130;
+}
+
+.pd-picker-panel {
+  width: min(560px, 100%);
+  max-height: 80vh;
+  background: var(--vellum);
+  border: 1px solid var(--faint);
+  padding: 28px 28px 24px;
+  box-shadow: 0 18px 45px rgba(26, 20, 16, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.pd-picker-title {
+  font-size: clamp(24px, 3.5vw, 34px);
+  color: var(--ink);
+  line-height: 1;
+  margin-top: 6px;
+  margin-bottom: 4px;
+}
+
+.pd-picker-hint {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  margin-bottom: 16px;
+}
+
+.pd-picker-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 20px;
+  border: 1px solid var(--faint);
+  max-height: 360px;
+}
+
+.pd-picker-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--faint);
+  transition: background 0.15s;
+}
+
+.pd-picker-item:last-child {
+  border-bottom: none;
+}
+
+.pd-picker-item:hover {
+  background: rgba(139, 58, 30, 0.04);
+}
+
+.pd-picker-item--checked {
+  background: rgba(139, 58, 30, 0.06);
+}
+
+.pd-picker-checkbox {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--sienna);
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.pd-picker-item-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.pd-picker-abbr {
+  font-family: var(--serif);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.pd-picker-desc {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Empty state */
