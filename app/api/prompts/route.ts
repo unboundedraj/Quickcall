@@ -52,6 +52,16 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const expectedPassword = process.env.ADMIN_DELETE_PASSWORD;
+    if (!expectedPassword) {
+      return Response.json({ error: "Admin password is not configured." }, { status: 500 });
+    }
+
+    const providedPassword = request.headers.get("x-admin-delete-password") || "";
+    if (providedPassword !== expectedPassword) {
+      return Response.json({ error: "Unauthorized." }, { status: 401 });
+    }
+
     const body = (await request.json()) as Partial<Prompt>;
     const abbreviation = body.abbreviation?.trim() || "";
     const fullPrompt = body.fullPrompt?.trim() || "";

@@ -97,18 +97,24 @@ export default function PromptDiary({ embedded = false }: { embedded?: boolean }
   // ── Prompt CRUD ──────────────────────────────────────────────────────────
   const add = async () => {
     if (!abbr.trim() || !full.trim()) return;
+
+    const password = window.prompt("Enter admin password to add this prompt:");
+    if (password === null) return;
+    if (!password.trim()) { setError("Add cancelled: admin password is required."); return; }
+
     try {
       setSaving(true);
       setError(null);
       const res = await fetch("/api/prompts", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-admin-delete-password": password },
         body: JSON.stringify({
           abbreviation: abbr.trim(),
           description: desc.trim(),
           fullPrompt: full.trim(),
         }),
       });
+      if (res.status === 401) { setError("Incorrect admin password."); return; }
       if (!res.ok) throw new Error();
       const created = (await res.json()) as Prompt;
       setPrompts((prev) => [...prev, created]);
